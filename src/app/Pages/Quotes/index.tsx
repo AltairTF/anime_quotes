@@ -22,7 +22,6 @@ function Quotes() {
     try {
       asyncGetQuotes()
         .then(data => {
-          console.log('data:', data);
           if (data !== '502' && data !== undefined) {
             setdata({
               title: data.anime,
