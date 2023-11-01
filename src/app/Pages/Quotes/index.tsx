@@ -1,33 +1,59 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Button from '@/app/components/Button';
 import CardQuotes from '@/app/components/CardsQuotes';
 import { asyncGetQuotes } from './Requests';
 
 function Quotes() {
+  const [loading, setLoading] = useState(false);
   const [data, setdata] = useState({
-    title: 'Teste',
-    character: 'Naruto',
-    quote: 'Pode ser duro as vezes',
+    title: '',
+    character: '',
+    quote: '',
   });
 
-  function handleClick() {
-    asyncGetQuotes().then(data => {
-      setdata({
-        title: data.anime,
-        character: data.character,
-        quote: data.quote,
-      });
-    });
+  useEffect(() => {
+    getData();
+  }, []);
+
+  function getData() {
+    setLoading(true);
+    try {
+      asyncGetQuotes()
+        .then(data => {
+          if (data !== '502' && data !== undefined) {
+            setdata({
+              title: data.anime,
+              character: data.character,
+              quote: data.quote,
+            });
+          } else {
+            setdata({
+              title: 'Erro 502',
+              character: '',
+              quote: '',
+            });
+            setTimeout(() => {
+              getData();
+            }, 3000);
+          }
+        })
+        .then(() => {
+          setLoading(false);
+        });
+    } catch (error) {
+      setLoading(false);
+      console.error(error);
+    }
   }
 
   return (
     <div className="flex flex-col h-screen w-screen items-center justify-center">
-      <Button className="m-4" onClick={handleClick}>
+      <Button className="m-4" onClick={() => getData()}>
         Nova Frase
       </Button>
-      <CardQuotes title={data.title} character={data.character} quote={data.quote} />
+      <CardQuotes loading={loading} title={data.title} character={data.character} quote={data.quote} />
     </div>
   );
 }
